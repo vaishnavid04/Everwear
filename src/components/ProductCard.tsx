@@ -35,6 +35,10 @@ export default function ProductCard({
     description: name
   };
 
+  // Determine display prices - prioritize individual props, then product object
+  const displayPrice = product?.salePrice || price;
+  const displayOriginalPrice = product?.salePrice ? product.price : originalPrice;
+
   const [selectedColor, setSelectedColor] = useState(colors?.[0] || 'black');
   const { dispatch } = useCart();
 
@@ -74,18 +78,18 @@ export default function ProductCard({
 
         <div className="flex items-center justify-between mb-3">
           <div>
-            {originalPrice ? (
+            {displayOriginalPrice ? (
               <div className="flex items-center space-x-2">
                 <span className="text-xl font-bold text-primary-800">
-                  ${price.toFixed(2)}
+                  ${displayPrice.toFixed(2)}
                 </span>
                 <span className="text-sm text-neutral-500 line-through">
-                  ${originalPrice.toFixed(2)}
+                  ${displayOriginalPrice.toFixed(2)}
                 </span>
               </div>
             ) : (
               <div className="text-xl font-bold text-neutral-900">
-                ${price.toFixed(2)}
+                ${displayPrice.toFixed(2)}
               </div>
             )}
           </div>

@@ -38,8 +38,8 @@ export default function HeroSection() {
           <div className="animate-fadeIn" style={{ animationDelay: '0.2s' }}>
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
-                alt="Essential Basics Collection"
+                src="/images/store front.jpg"
+                alt="Everwear Store Front"
                 className="w-full h-[500px] object-cover rounded-lg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>

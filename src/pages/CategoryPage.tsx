@@ -3,108 +3,42 @@ import { useParams } from 'react-router-dom';
 import FilterSection from '../components/FilterSection';
 import ProductGrid from '../components/ProductGrid';
 import { Product } from '../types';
+import {
+  products,
+  getMensProducts,
+  getWomensProducts,
+  getAccessoriesProducts,
+  getSaleProducts
+} from '../data/products';
 
-// Simulated products data - Essential Basics Collection
-const products: Product[] = [
-  // T-Shirts
-  {
-    id: 1,
-    name: 'Essential T-Shirt',
-    description: 'Premium cotton essential t-shirt in classic fit',
-    price: 28.00,
-    category: 't-shirts',
-    imageUrl: '/images/tshirt-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 2,
-    name: 'Essential T-Shirt',
-    description: 'Premium cotton essential t-shirt in classic fit',
-    price: 28.00,
-    category: 't-shirts',
-    imageUrl: '/images/tshirt-2.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-
-  // Crop Tops
-  {
-    id: 3,
-    name: 'Essential Crop Top',
-    description: 'Comfortable cotton crop top for everyday wear',
-    price: 24.00,
-    category: 'crop-tops',
-    imageUrl: '/images/crop-top-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 4,
-    name: 'Essential Crop Top',
-    description: 'Comfortable cotton crop top for everyday wear',
-    price: 24.00,
-    category: 'crop-tops',
-    imageUrl: '/images/crop-top-2.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-
-  // Sweatshirts
-  {
-    id: 5,
-    name: 'Essential Sweatshirt',
-    description: 'Cozy cotton blend sweatshirt for ultimate comfort',
-    price: 48.00,
-    category: 'sweatshirts',
-    imageUrl: '/images/sweatshirt-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 6,
-    name: 'Essential Sweatshirt',
-    description: 'Cozy cotton blend sweatshirt for ultimate comfort',
-    price: 48.00,
-    category: 'sweatshirts',
-    imageUrl: '/images/sweatshirt-2.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-
-  // Sweatpants
-  {
-    id: 7,
-    name: 'Essential Sweatpants',
-    description: 'Relaxed fit sweatpants in soft cotton blend',
-    price: 42.00,
-    category: 'sweatpants',
-    imageUrl: '/images/sweatpants-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 8,
-    name: 'Essential Sweatpants',
-    description: 'Relaxed fit sweatpants in soft cotton blend',
-    price: 42.00,
-    category: 'sweatpants',
-    imageUrl: '/images/sweatpants-2.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-
-
-];
+// Using centralized product data
 
 export default function CategoryPage() {
   const { category } = useParams<{ category: string }>();
   const [selectedSort, setSelectedSort] = useState('newest');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
 
-  const categoryProducts = products.filter(
-    (product) => product.category.toLowerCase() === category?.toLowerCase()
-  );
+  // Get products based on category using centralized data
+  const getCategoryProducts = (): Product[] => {
+    switch (category?.toLowerCase()) {
+      case 'mens':
+      case 'men':
+        return getMensProducts();
+      case 'women':
+      case 'womens':
+        return getWomensProducts();
+      case 'accessories':
+        return getAccessoriesProducts();
+      case 'sale':
+        return getSaleProducts();
+      default:
+        return products.filter(
+          (product) => product.category.toLowerCase() === category?.toLowerCase()
+        );
+    }
+  };
+
+  const categoryProducts = getCategoryProducts();
 
   // Apply sorting
   const sortedProducts = [...categoryProducts].sort((a, b) => {

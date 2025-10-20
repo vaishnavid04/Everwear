@@ -1,46 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import StructuredData from './StructuredData';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  salePrice?: number;
-  imageUrl: string;
-  isBestseller?: boolean;
-  category: string;
-}
+import { getFeaturedProducts } from '../data/products';
+import { Product } from '../types';
 
 const PopularNow: React.FC = () => {
-  // Top 3 bestselling products - curated list
-  const popularProducts: Product[] = [
-    {
-      id: 1,
-      name: 'Beanie',
-      price: 28.00,
-      imageUrl: '/images/tshirt-1.jpg',
-      isBestseller: true,
-      category: 'accessories'
-    },
-    {
-      id: 3,
-      name: 'Sports Bra',
-      price: 63.00,
-      imageUrl: '/images/crop-top-1.jpg',
-      isBestseller: true,
-      category: 'sports-bras'
-    },
-    {
-      id: 5,
-      name: 'Baseball Hat',
-      price: 48.00,
-      salePrice: 38.00,
-      imageUrl: '/images/sweatshirt-1.jpg',
-      isBestseller: true,
-      category: 'accessories'
-    }
-  ];
+  // Get featured products from centralized data
+  const popularProducts = getFeaturedProducts().map(product => ({
+    ...product,
+    isBestseller: true
+  }));
 
   const formatPrice = (price: number) => `$${price.toFixed(2)}`;
 

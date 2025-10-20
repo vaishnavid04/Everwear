@@ -1,133 +1,42 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  imageUrl: string;
-  colors: string[];
-  sizes: string[];
-  gender?: 'men' | 'women' | 'unisex';
-}
+import {
+  getMensProducts,
+  getWomensProducts,
+  getAccessoriesProducts,
+  getSaleProducts
+} from '../data/products';
+import { Product } from '../types';
 
 const DepartmentPage: React.FC = () => {
-  const { department } = useParams<{ department: string }>();
+  const location = useLocation();
 
-  // All products from the existing catalog
-  const allProducts: Product[] = [
-    {
-      id: 1,
-      name: 'Essential T-Shirt',
-      description: 'Premium cotton essential t-shirt in classic fit',
-      price: 28.00,
-      category: 't-shirts',
-      imageUrl: '/images/tshirt-1.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      gender: 'unisex'
-    },
-    {
-      id: 2,
-      name: 'Essential T-Shirt',
-      description: 'Premium cotton essential t-shirt in classic fit',
-      price: 28.00,
-      category: 't-shirts',
-      imageUrl: '/images/tshirt-2.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      gender: 'unisex'
-    },
-    {
-      id: 3,
-      name: 'Essential Crop Top',
-      description: 'Comfortable crop top perfect for layering',
-      price: 24.00,
-      category: 'crop-tops',
-      imageUrl: '/images/crop-top-1.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      gender: 'women'
-    },
-    {
-      id: 4,
-      name: 'Essential Crop Top',
-      description: 'Comfortable crop top perfect for layering',
-      price: 24.00,
-      category: 'crop-tops',
-      imageUrl: '/images/crop-top-2.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      gender: 'women'
-    },
-    {
-      id: 5,
-      name: 'Essential Sweatshirt',
-      description: 'Cozy cotton blend sweatshirt for everyday comfort',
-      price: 48.00,
-      category: 'sweatshirts',
-      imageUrl: '/images/sweatshirt-1.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      gender: 'unisex'
-    },
-    {
-      id: 6,
-      name: 'Essential Sweatshirt',
-      description: 'Cozy cotton blend sweatshirt for everyday comfort',
-      price: 48.00,
-      category: 'sweatshirts',
-      imageUrl: '/images/sweatshirt-2.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      gender: 'unisex'
-    },
-    {
-      id: 7,
-      name: 'Essential Sweatpants',
-      description: 'Relaxed fit sweatpants in soft cotton blend',
-      price: 42.00,
-      category: 'sweatpants',
-      imageUrl: '/images/sweatpants-1.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      gender: 'unisex'
-    },
-    {
-      id: 8,
-      name: 'Essential Sweatpants',
-      description: 'Relaxed fit sweatpants in soft cotton blend',
-      price: 42.00,
-      category: 'sweatpants',
-      imageUrl: '/images/sweatpants-2.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      gender: 'unisex'
-    }
-  ];
+  // Extract department from pathname
+  const getDepartmentFromPath = (): string => {
+    const path = location.pathname.replace('/', '');
+    return path;
+  };
 
-  // Filter products based on department
-  const getFilteredProducts = () => {
+  const department = getDepartmentFromPath();
+
+  // Get products based on department using centralized data
+  const getFilteredProducts = (): Product[] => {
     switch (department) {
       case 'mens':
-        return allProducts.filter(product => 
-          product.gender === 'men' || product.gender === 'unisex'
-        );
+        return getMensProducts();
       case 'women':
-        return allProducts.filter(product => 
-          product.gender === 'women' || product.gender === 'unisex'
-        );
+        return getWomensProducts();
       case 'accessories':
-        return []; // No accessories in current catalog
+        return getAccessoriesProducts();
       case 'sale':
-        return allProducts.slice(0, 3); // Mock sale items
+        return getSaleProducts();
       default:
-        return allProducts;
+        return [];
     }
   };
+
+  const filteredProducts = getFilteredProducts();
 
   const getDepartmentTitle = () => {
     switch (department) {
@@ -159,8 +68,6 @@ const DepartmentPage: React.FC = () => {
     }
   };
 
-  const filteredProducts = getFilteredProducts();
-
   return (
     <div className="min-h-screen bg-white">
       <div className="container-minimal py-12 lg:py-16">
@@ -182,7 +89,8 @@ const DepartmentPage: React.FC = () => {
                 key={product.id}
                 id={product.id}
                 name={product.name}
-                price={product.price}
+                price={product.salePrice || product.price}
+                originalPrice={product.salePrice ? product.price : undefined}
                 imageUrl={product.imageUrl}
                 colors={product.colors}
               />

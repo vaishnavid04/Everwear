@@ -3,94 +3,9 @@ import { useParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { Product } from '../types';
 import { Plus, Minus, Check, AlertCircle } from 'lucide-react';
+import { getProductById } from '../data/products';
 
-// Essential Basics Collection - same as CategoryPage
-const products: Product[] = [
-  // T-Shirts
-  {
-    id: 1,
-    name: 'Essential T-Shirt',
-    description: 'Premium cotton essential t-shirt in classic fit',
-    price: 28.00,
-    category: 't-shirts',
-    imageUrl: '/images/tshirt-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 2,
-    name: 'Essential T-Shirt',
-    description: 'Premium cotton essential t-shirt in classic fit',
-    price: 28.00,
-    category: 't-shirts',
-    imageUrl: '/images/tshirt-2.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  // Crop Tops
-  {
-    id: 3,
-    name: 'Essential Crop Top',
-    description: 'Comfortable cotton crop top for everyday wear',
-    price: 24.00,
-    category: 'crop-tops',
-    imageUrl: '/images/crop-top-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 4,
-    name: 'Essential Crop Top',
-    description: 'Comfortable cotton crop top for everyday wear',
-    price: 24.00,
-    category: 'crop-tops',
-    imageUrl: '/images/crop-top-2.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  // Sweatshirts
-  {
-    id: 5,
-    name: 'Essential Sweatshirt',
-    description: 'Cozy cotton blend sweatshirt for ultimate comfort',
-    price: 48.00,
-    category: 'sweatshirts',
-    imageUrl: '/images/sweatshirt-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 6,
-    name: 'Essential Sweatshirt',
-    description: 'Cozy cotton blend sweatshirt for ultimate comfort',
-    price: 48.00,
-    category: 'sweatshirts',
-    imageUrl: '/images/sweatshirt-2.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  // Sweatpants
-  {
-    id: 7,
-    name: 'Essential Sweatpants',
-    description: 'Relaxed fit sweatpants in soft cotton blend',
-    price: 42.00,
-    category: 'sweatpants',
-    imageUrl: '/images/sweatpants-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-  {
-    id: 8,
-    name: 'Essential Sweatpants',
-    description: 'Relaxed fit sweatpants in soft cotton blend',
-    price: 42.00,
-    category: 'sweatpants',
-    imageUrl: '/images/sweatpants-2.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-  },
-];
+// Using centralized product data
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -100,7 +15,7 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const product = products.find(p => p.id === Number(id));
+  const product = getProductById(Number(id));
 
   // Set default selections when product loads
   useEffect(() => {
