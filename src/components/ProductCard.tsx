@@ -5,13 +5,13 @@ import { ShoppingCart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 interface ProductCardProps {
-  id: number;
-  name: string;
-  price: number;
+  id?: number;
+  name?: string;
+  price?: number;
   originalPrice?: number;
-  imageUrl: string;
-  colors: string[];
-  product?: Product; // Optional for backward compatibility
+  imageUrl?: string;
+  colors?: string[];
+  product?: Product; // Product object contains all necessary data
 }
 
 export default function ProductCard({
@@ -23,23 +23,23 @@ export default function ProductCard({
   colors,
   product
 }: ProductCardProps) {
-  // Use individual props or fallback to product object for backward compatibility
+  // Use product object if provided, otherwise use individual props
   const productData = product || {
-    id,
-    name,
-    price: originalPrice || price,
-    imageUrl,
-    colors,
+    id: id!,
+    name: name!,
+    price: originalPrice || price!,
+    imageUrl: imageUrl!,
+    colors: colors!,
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
     category: 'general',
-    description: name
+    description: name!
   };
 
-  // Determine display prices - prioritize individual props, then product object
-  const displayPrice = product?.salePrice || price;
-  const displayOriginalPrice = product?.salePrice ? product.price : originalPrice;
+  // Determine display prices
+  const displayPrice = productData.salePrice || productData.price;
+  const displayOriginalPrice = productData.salePrice ? productData.price : originalPrice;
 
-  const [selectedColor, setSelectedColor] = useState(colors?.[0] || 'black');
+  const [selectedColor, setSelectedColor] = useState(productData.colors?.[0] || 'black');
   const { dispatch } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -57,19 +57,19 @@ export default function ProductCard({
   return (
     <div className="group card-product overflow-hidden transition-all duration-200 hover:shadow-medium">
       <div className="relative overflow-hidden">
-        <Link to={`/product/${id}`}>
+        <Link to={`/product/${productData.id}`}>
           <img
-            src={imageUrl}
-            alt={name}
+            src={productData.imageUrl}
+            alt={productData.name}
             className="w-full h-64 object-cover transition-transform duration-200 group-hover:scale-105"
           />
         </Link>
       </div>
-      
+
       <div className="p-4">
-        <Link to={`/product/${id}`}>
+        <Link to={`/product/${productData.id}`}>
           <h3 className="text-lg font-heading font-semibold text-neutral-900 mb-1 group-hover:text-primary-800 transition-colors duration-200">
-            {name}
+            {productData.name}
           </h3>
         </Link>
         <p className="text-neutral-600 text-sm mb-3 line-clamp-2">
@@ -96,10 +96,10 @@ export default function ProductCard({
         </div>
         
         {/* Color Options */}
-        {colors && (
+        {productData.colors && (
           <div className="flex items-center justify-between">
             <div className="flex space-x-2">
-              {colors.map((color) => (
+              {productData.colors.map((color) => (
                 <button
                   key={color}
                   onClick={() => setSelectedColor(color)}

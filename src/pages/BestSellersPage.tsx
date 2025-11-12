@@ -1,57 +1,14 @@
 import React from 'react';
 import ProductCard from '../components/ProductCard';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  salePrice?: number;
-  category: string;
-  imageUrl: string;
-  colors: string[];
-  sizes: string[];
-  isBestseller: boolean;
-}
+import { products } from '../data/products';
 
 const BestSellersPage: React.FC = () => {
-  // Same 3 bestselling products from Popular Now section
-  const bestSellerProducts: Product[] = [
-    {
-      id: 1,
-      name: 'Beanie',
-      description: 'Premium knit beanie for everyday comfort and style',
-      price: 28.00,
-      category: 'accessories',
-      imageUrl: '/images/tshirt-1.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['One Size'],
-      isBestseller: true
-    },
-    {
-      id: 3,
-      name: 'Sports Bra',
-      description: 'High-performance sports bra with superior support',
-      price: 63.00,
-      category: 'sports-bras',
-      imageUrl: '/images/crop-top-1.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-      isBestseller: true
-    },
-    {
-      id: 5,
-      name: 'Baseball Hat',
-      description: 'Classic baseball cap with adjustable fit',
-      price: 48.00,
-      salePrice: 38.00,
-      category: 'accessories',
-      imageUrl: '/images/sweatshirt-1.jpg',
-      colors: ['black', 'grey', 'cream', 'dark-brown'],
-      sizes: ['One Size'],
-      isBestseller: true
-    }
-  ];
+  // Get bestselling products from centralized data
+  const bestSellerProducts = [
+    products.find(p => p.id === 1), // Beanie
+    products.find(p => p.id === 3), // Sports Bra
+    products.find(p => p.id === 2), // Baseball Hat (on sale)
+  ].filter(Boolean); // Remove any undefined products
 
   return (
     <div className="min-h-screen bg-white">

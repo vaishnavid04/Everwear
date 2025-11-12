@@ -20,6 +20,11 @@ export default function CategoryPage() {
 
   // Get products based on category using centralized data
   const getCategoryProducts = (): Product[] => {
+    // If no category parameter, show all products (for /shop route)
+    if (!category) {
+      return products;
+    }
+
     switch (category?.toLowerCase()) {
       case 'mens':
       case 'men':
@@ -74,10 +79,10 @@ export default function CategoryPage() {
     <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2 capitalize">
-          {category?.replace('-', ' ')}
+          {category ? category.replace('-', ' ') : 'All Products'}
         </h1>
         <p className="text-gray-600">
-          {filteredProducts.length} items found in {category}
+          {filteredProducts.length} items found{category ? ` in ${category}` : ''}
         </p>
       </div>
 

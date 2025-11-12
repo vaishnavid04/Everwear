@@ -24,17 +24,7 @@ export const products: Product[] = [
     colors: ['black', 'grey', 'cream', 'dark-brown'],
     sizes: ['One Size'],
   },
-  {
-    id: 9,
-    name: 'Baseball Hat',
-    description: 'Classic baseball cap with adjustable strap',
-    price: 48.00,
-    salePrice: 38.00,
-    category: 'accessories',
-    imageUrl: '/images/sweatshirt-1.jpg',
-    colors: ['black', 'grey', 'cream', 'dark-brown'],
-    sizes: ['One Size'],
-  },
+
   // Women's Items
   {
     id: 3,
@@ -117,7 +107,10 @@ export const getWomensProducts = (): Product[] => {
 };
 
 export const getAccessoriesProducts = (): Product[] => {
-  return products.filter(product => product.category === 'accessories');
+  // Include accessories category items + Baseball Hat from sale category
+  return products.filter(product =>
+    product.category === 'accessories' || product.id === 2 // Baseball Hat
+  );
 };
 
 export const getSaleProducts = (): Product[] => {

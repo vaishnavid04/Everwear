@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, User, ChevronDown, Menu, X, Search } from "lucide-react";
 import { useCart } from "../context/CartContext";
-import { theme } from "../styles/theme";
 
 const departments = [
   { name: "Menswear", path: "/mens" },
