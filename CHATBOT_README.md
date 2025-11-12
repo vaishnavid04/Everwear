@@ -61,9 +61,10 @@ If the OpenAI API is unavailable, the chatbot automatically uses:
 4. **Existing product data** - Automatically synced with chatbot
 
 ### **Security**
-- API key stored in environment variable
-- Never exposed to client-side code
-- Fallback system prevents service interruption
+- API key stored in `.env.local` (automatically ignored by git)
+- Never exposed to client-side code or committed to repository
+- `.env.example` provided as template for other developers
+- Fallback system prevents service interruption if API is unavailable
 
 ## Testing the Chatbot
 
