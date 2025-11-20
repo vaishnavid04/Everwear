@@ -247,8 +247,15 @@ export default function CartPage() {
       {/* Enhanced Order Confirmation Modal */}
       {showOrderConfirmation && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full animate-scaleIn">
-            <div className="bg-gradient-primary text-white p-8 rounded-t-2xl text-center">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scaleIn">
+            <div className="bg-gradient-primary text-white p-6 rounded-t-2xl text-center relative">
+              {/* Close Button */}
+              <button
+                onClick={handleFinishOrder}
+                className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
               <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-glow">
                 <Check className="w-10 h-10 text-white" />
               </div>
@@ -261,7 +268,7 @@ export default function CartPage() {
               </div>
             </div>
 
-            <div className="p-8">
+            <div className="p-6">
               {/* Order Items */}
               <div className="mb-6">
                 <h3 className="font-heading font-semibold text-neutral-900 mb-4">Order Summary</h3>

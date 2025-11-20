@@ -33,42 +33,26 @@ const PopularNow: React.FC = () => {
               key={product.id}
               to={`/product/${product.id}`}
               className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-              onClick={() => {
-                // Analytics event
-                if (typeof window !== 'undefined' && (window as unknown as { gtag?: unknown }).gtag) {
-                  const gtag = (window as unknown as { gtag: (event: string, action: string, params: Record<string, unknown>) => void }).gtag;
-                  gtag('event', 'select_item', {
-                    product_id: product.id,
-                    name: product.name,
-                    price: product.salePrice || product.price,
-                    position: index + 1
-                  });
-                }
-              }}
             >
               {/* Product Image */}
-              <div className="relative aspect-[4/5] overflow-hidden bg-neutral-100">
+              <div className="aspect-square overflow-hidden bg-neutral-50">
                 <img
                   src={product.imageUrl}
                   alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                {product.isBestseller && (
-                  <div className="absolute top-3 left-3">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-800 text-white">
-                      Bestseller
-                    </span>
-                  </div>
-                )}
               </div>
 
               {/* Product Info */}
               <div className="p-6">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2 group-hover:text-primary-800 transition-colors">
+                <h3 className="font-semibold text-lg text-neutral-900 mb-2 group-hover:text-primary-800 transition-colors">
                   {product.name}
                 </h3>
+                <p className="text-neutral-600 text-sm mb-3 line-clamp-2">
+                  {product.description}
+                </p>
                 
+                {/* Price */}
                 <div className="flex items-center space-x-2">
                   {product.salePrice ? (
                     <>
@@ -85,21 +69,38 @@ const PopularNow: React.FC = () => {
                     </span>
                   )}
                 </div>
+
+                {/* Colors */}
+                {product.colors && product.colors.length > 0 && (
+                  <div className="flex items-center space-x-1 mt-3">
+                    <span className="text-xs text-neutral-500 mr-2">Colors:</span>
+                    {product.colors.slice(0, 4).map((color) => (
+                      <div
+                        key={color}
+                        className="w-4 h-4 rounded-full border border-neutral-200"
+                        style={{
+                          backgroundColor: color === 'cream' ? '#f5f5dc' : 
+                                         color === 'dark-brown' ? '#654321' : color
+                        }}
+                      />
+                    ))}
+                    {product.colors.length > 4 && (
+                      <span className="text-xs text-neutral-500">+{product.colors.length - 4}</span>
+                    )}
+                  </div>
+                )}
               </div>
             </Link>
           ))}
         </div>
 
-        {/* View All Link */}
+        {/* View All Button */}
         <div className="text-center">
           <Link
-            to="/best-sellers"
-            className="inline-flex items-center text-primary-800 hover:text-primary-900 font-medium transition-colors duration-200"
+            to="/shop"
+            className="btn-secondary inline-flex items-center justify-center"
           >
-            View all best sellers
-            <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            View All Products
           </Link>
         </div>
       </div>
