@@ -49,7 +49,8 @@ export default function ProductCard({
       payload: {
         ...productData,
         selectedColor,
-        selectedSize: productData.sizes?.[2] || 'M' // Default to medium
+        selectedSize: productData.sizes?.[2] || 'M', // Default to medium
+        quantity: 1
       }
     });
   };
