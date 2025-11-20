@@ -59,7 +59,7 @@ export default function Chatbot() {
       };
 
       setMessages(prev => [...prev, botResponse]);
-    } catch (error) {
+    } catch {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment, or feel free to browse our products!",
@@ -72,7 +72,7 @@ export default function Chatbot() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -149,7 +149,7 @@ export default function Chatbot() {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="Ask about products, pricing, sizing..."
                 className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:border-primary-800 text-sm"
               />

@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import StructuredData from './StructuredData';
 import { getFeaturedProducts } from '../data/products';
-import { Product } from '../types';
 
 const PopularNow: React.FC = () => {
   // Get featured products from centralized data
@@ -36,8 +35,9 @@ const PopularNow: React.FC = () => {
               className="group block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
               onClick={() => {
                 // Analytics event
-                if (typeof window !== 'undefined' && (window as any).gtag) {
-                  (window as any).gtag('event', 'select_item', {
+                if (typeof window !== 'undefined' && (window as unknown as { gtag?: unknown }).gtag) {
+                  const gtag = (window as unknown as { gtag: (event: string, action: string, params: Record<string, unknown>) => void }).gtag;
+                  gtag('event', 'select_item', {
                     product_id: product.id,
                     name: product.name,
                     price: product.salePrice || product.price,

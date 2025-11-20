@@ -2,8 +2,6 @@ import React, { useEffect } from 'react';
 import HeroSection from '../components/HeroSection';
 import PopularNow from '../components/PopularNow';
 
-
-
 export default function HomePage() {
   // Analytics: Track section view
   useEffect(() => {
@@ -11,8 +9,9 @@ export default function HomePage() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-              (window as any).gtag('event', 'view_section', {
+            if (typeof window !== 'undefined' && (window as unknown as { gtag?: unknown }).gtag) {
+              const gtag = (window as unknown as { gtag: (event: string, action: string, params: Record<string, unknown>) => void }).gtag;
+              gtag('event', 'view_section', {
                 section: 'popular_now'
               });
             }

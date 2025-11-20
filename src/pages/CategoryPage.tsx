@@ -11,8 +11,6 @@ import {
   getSaleProducts
 } from '../data/products';
 
-// Using centralized product data
-
 export default function CategoryPage() {
   const { category } = useParams<{ category: string }>();
   const [selectedSort, setSelectedSort] = useState('newest');

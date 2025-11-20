@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { CreditCard, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { CreditCard, Lock, AlertCircle } from 'lucide-react';
 
 interface PaymentFormProps {
   amount: number;
-  onSuccess: (paymentIntent: any) => void;
+  onSuccess: (paymentIntent: unknown) => void;
   onError: (error: string) => void;
   loading?: boolean;
 }
@@ -129,7 +129,7 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
         message: 'Payment processed successfully! Check your email for order confirmation and shipping updates.'
       });
 
-    } catch (err) {
+    } catch {
       onError('Payment processing failed. Please try again.');
     } finally {
       setIsProcessing(false);

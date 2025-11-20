@@ -20,7 +20,7 @@ export default function CartPage() {
     city: "",
     zipCode: "",
   });
-  const [paymentIntent, setPaymentIntent] = useState<any>(null);
+  const [paymentIntent, setPaymentIntent] = useState<unknown>(null);
   const [orderId] = useState(() => Math.floor(Math.random() * 1000000));
 
   const total = state.items.reduce(
@@ -39,7 +39,7 @@ export default function CartPage() {
     }
   };
 
-  const handlePaymentSuccess = (intent: any, details: CustomerDetails) => {
+  const handlePaymentSuccess = (intent: unknown, details: CustomerDetails) => {
     setPaymentIntent(intent);
     setCustomerDetails(details);
     setShowCheckout(false);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ArrowLeft, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { X, ArrowLeft } from 'lucide-react';
 import PaymentForm from './PaymentForm';
 import PaymentStatus from './PaymentStatus';
 import { CustomerDetails } from '../types';
@@ -8,13 +8,13 @@ interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   total: number;
-  items: any[];
-  onSuccess: (paymentIntent: any, customerDetails: CustomerDetails) => void;
+  items: unknown[];
+  onSuccess: (paymentIntent: unknown, customerDetails: CustomerDetails) => void;
 }
 
 type CheckoutStep = 'details' | 'payment' | 'success' | 'error' | 'processing';
 
-export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess }: CheckoutModalProps) {
+export default function CheckoutModal({ isOpen, onClose, total, onSuccess }: CheckoutModalProps) {
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('details');
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
     firstName: '',
@@ -24,23 +24,21 @@ export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess
     city: '',
     zipCode: '',
   });
-  const [paymentIntent, setPaymentIntent] = useState<any>(null);
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
-  const [retryCount, setRetryCount] = useState(0);
 
   const handleCustomerDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentStep('payment');
   };
 
-  const handlePaymentSuccess = (intent: any) => {
+  const handlePaymentSuccess = (intent: unknown) => {
     setCurrentStep('processing');
-    setSuccessMessage(intent.message || 'Payment processed successfully!');
+    const intentObj = intent as { message?: string };
+    setSuccessMessage(intentObj.message || 'Payment processed successfully!');
 
     // Simulate processing time
     setTimeout(() => {
-      setPaymentIntent(intent);
       setCurrentStep('success');
       setTimeout(() => {
         onSuccess(intent, customerDetails);
@@ -52,7 +50,6 @@ export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess
 
   const handlePaymentError = (errorMessage: string) => {
     setError(errorMessage);
-    setRetryCount(prev => prev + 1);
     setCurrentStep('error');
   };
 
@@ -71,9 +68,7 @@ export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess
       city: '',
       zipCode: '',
     });
-    setPaymentIntent(null);
     setError('');
-    setRetryCount(0);
   };
 
   const handleClose = () => {
