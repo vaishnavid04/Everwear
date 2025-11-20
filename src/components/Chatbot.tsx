@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, User, Bot } from 'lucide-react';
 import { sendChatMessage } from '../services/openai';
+import { saveChatbotInquiry } from '../services/chatbotApi';
+import { useAuth } from '../context/AuthContext';
 
 interface Message {
   id: string;
@@ -10,6 +12,7 @@ interface Message {
 }
 
 export default function Chatbot() {
+  const { state: authState } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -59,6 +62,10 @@ export default function Chatbot() {
       };
 
       setMessages(prev => [...prev, botResponse]);
+      
+      // save inquiry to database
+      const userId = authState.user?.id || null;
+      await saveChatbotInquiry(userId, messageToSend, aiResponse);
     } catch (error) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
