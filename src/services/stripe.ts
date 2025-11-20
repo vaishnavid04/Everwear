@@ -1,8 +1,8 @@
 import { loadStripe } from '@stripe/stripe-js';
 
-// This is your test publishable API key.
-// In production, you would get this from environment variables
-const stripePromise = loadStripe('pk_test_51234567890abcdef...' || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
+// Mock Stripe for demo purposes - no real API key needed
+// Set to null to use mock payment system
+const stripePromise = loadStripe(null as any);
 
 export { stripePromise };
 

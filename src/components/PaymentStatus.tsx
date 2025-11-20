@@ -24,7 +24,7 @@ export default function PaymentStatus({ status, message, onRetry, onClose }: Pay
         return {
           icon: <CheckCircle className="w-12 h-12" />,
           title: 'Payment Successful!',
-          description: 'Your payment has been processed successfully.',
+          description: message || 'Your payment has been processed successfully.',
           bgColor: 'bg-green-100',
           iconColor: 'text-green-600',
           titleColor: 'text-green-900'

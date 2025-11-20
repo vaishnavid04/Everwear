@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { Elements } from '@stripe/react-stripe-js';
 import { X, ArrowLeft, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
-import { stripePromise } from '../services/stripe';
 import PaymentForm from './PaymentForm';
 import PaymentStatus from './PaymentStatus';
 import { CustomerDetails } from '../types';
@@ -28,6 +26,7 @@ export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess
   });
   const [paymentIntent, setPaymentIntent] = useState<any>(null);
   const [error, setError] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const [retryCount, setRetryCount] = useState(0);
 
   const handleCustomerDetailsSubmit = (e: React.FormEvent) => {
@@ -37,6 +36,7 @@ export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess
 
   const handlePaymentSuccess = (intent: any) => {
     setCurrentStep('processing');
+    setSuccessMessage(intent.message || 'Payment processed successfully!');
 
     // Simulate processing time
     setTimeout(() => {
@@ -88,7 +88,7 @@ export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess
     return (
       <PaymentStatus
         status={currentStep as 'processing' | 'success' | 'error'}
-        message={error}
+        message={currentStep === 'success' ? successMessage : error}
         onRetry={handleRetryPayment}
         onClose={handleClose}
       />
@@ -249,13 +249,11 @@ export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess
           )}
 
           {currentStep === 'payment' && (
-            <Elements stripe={stripePromise}>
-              <PaymentForm
-                amount={total}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-              />
-            </Elements>
+            <PaymentForm
+              amount={total}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+            />
           )}
 
 
