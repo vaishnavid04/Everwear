@@ -225,12 +225,6 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
         </div>
       </div>
 
-      {/* Demo Notice */}
-      <div className="flex items-center space-x-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
-        <CheckCircle className="w-4 h-4" />
-        <span><strong>Demo Mode:</strong> No real charges will be made. Use any valid 16-digit card number, future expiry date (MM/YY), and 3-digit CVC.</span>
-      </div>
-
       {/* Submit Button */}
       <button
         type="submit"
