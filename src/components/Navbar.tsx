@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, ChevronDown, Menu, X, Search } from "lucide-react";
+import { ShoppingCart, User, ChevronDown, Menu, X, Search, LogOut } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 const departments = [
   { name: "Menswear", path: "/mens" },
@@ -13,6 +14,7 @@ const departments = [
 
 export default function Navbar() {
   const { state } = useCart();
+  const { state: authState, dispatch: authDispatch } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -21,6 +23,11 @@ export default function Navbar() {
     (acc, item) => acc + item.quantity,
     0
   );
+
+  const handleLogout = () => {
+    authDispatch({ type: 'LOGOUT' });
+    setIsOpen(false);
+  };
 
   const handleCatalogEnter = () => {
     if (timeoutRef.current) {
@@ -97,14 +104,29 @@ export default function Navbar() {
               )}
             </Link>
 
-            {/* Sign In Button */}
-            <Link
-              to="/login"
-              className="hidden sm:flex items-center space-x-2 text-neutral-700 hover:text-primary-800 transition-colors duration-200"
-            >
-              <User size={20} />
-              <span className="font-medium">Account</span>
-            </Link>
+            {/* Account Section */}
+            {authState.isAuthenticated ? (
+              <div className="hidden sm:flex items-center space-x-4">
+                <span className="text-neutral-700 font-medium">
+                  Welcome, {authState.user?.firstName || 'User'}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 text-neutral-700 hover:text-primary-800 transition-colors duration-200"
+                >
+                  <LogOut size={20} />
+                  <span className="font-medium">Logout</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="hidden sm:flex items-center space-x-2 text-neutral-700 hover:text-primary-800 transition-colors duration-200"
+              >
+                <User size={20} />
+                <span className="font-medium">Account</span>
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -135,14 +157,29 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="border-t border-neutral-200 pt-4">
-              <Link
-                to="/login"
-                className="flex items-center space-x-3 text-neutral-700 hover:text-primary-800 font-medium py-2 transition-colors duration-200"
-                onClick={() => setIsOpen(false)}
-              >
-                <User size={20} />
-                <span>Account</span>
-              </Link>
+              {authState.isAuthenticated ? (
+                <div className="space-y-2">
+                  <div className="text-neutral-700 font-medium py-2">
+                    Welcome, {authState.user?.firstName || 'User'}
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center space-x-3 text-neutral-700 hover:text-primary-800 font-medium py-2 transition-colors duration-200"
+                  >
+                    <LogOut size={20} />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center space-x-3 text-neutral-700 hover:text-primary-800 font-medium py-2 transition-colors duration-200"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <User size={20} />
+                  <span>Account</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

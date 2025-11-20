@@ -1,11 +1,15 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { CustomerDetails } from "../types";
-import { X, ShoppingBag, CreditCard, Truck, Check, Sparkles, Star } from "lucide-react";
+import { X, ShoppingBag, CreditCard, Truck, Check, Sparkles, Star, LogIn } from "lucide-react";
 import CheckoutModal from "../components/CheckoutModal";
 
 export default function CartPage() {
+  const navigate = useNavigate();
   const { state, dispatch } = useCart();
+  const { state: authState } = useAuth();
   const [showCheckout, setShowCheckout] = useState(false);
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
@@ -46,6 +50,16 @@ export default function CartPage() {
     setShowOrderConfirmation(false);
     dispatch({ type: "CLEAR_CART" });
     setPaymentIntent(null);
+  };
+
+  const handleCheckoutClick = () => {
+    if (!authState.isAuthenticated) {
+      // Save current URL to return after login
+      localStorage.setItem('everwear_return_url', '/cart');
+      navigate('/login');
+    } else {
+      setShowCheckout(true);
+    }
   };
 
   if (state.items.length === 0 && !showOrderConfirmation) {
@@ -186,12 +200,30 @@ export default function CartPage() {
             </div>
 
             <button
-              onClick={() => setShowCheckout(true)}
+              onClick={handleCheckoutClick}
               className="w-full btn-gradient flex items-center justify-center space-x-3 text-lg"
             >
-              <CreditCard size={24} />
-              <span>Secure Checkout</span>
+              {authState.isAuthenticated ? (
+                <>
+                  <CreditCard size={24} />
+                  <span>Secure Checkout</span>
+                </>
+              ) : (
+                <>
+                  <LogIn size={24} />
+                  <span>Login to Checkout</span>
+                </>
+              )}
             </button>
+
+            {!authState.isAuthenticated && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-center space-x-2 text-sm text-blue-700">
+                  <LogIn className="w-4 h-4" />
+                  <span>Create an account or login to save your cart and checkout securely</span>
+                </div>
+              </div>
+            )}
 
             <div className="mt-4 text-center">
               <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500">
