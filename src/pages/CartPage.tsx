@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { CustomerDetails } from "../types";
 import { X, ShoppingBag, CreditCard, Truck, Check, Sparkles, Star } from "lucide-react";
 import CheckoutModal from "../components/CheckoutModal";
+import { createOrder } from "../services/orderApi";
 
 export default function CartPage() {
   const { state, dispatch } = useCart();
+  const { state: authState } = useAuth();
   const [showCheckout, setShowCheckout] = useState(false);
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
@@ -19,27 +22,69 @@ export default function CartPage() {
   const [paymentIntent, setPaymentIntent] = useState<any>(null);
   const [orderId] = useState(() => Math.floor(Math.random() * 1000000));
 
+  // calculate total using salePrice if available, otherwise use price
   const total = state.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => {
+      const itemPrice = item.salePrice || item.price;
+      return sum + itemPrice * item.quantity;
+    },
     0
   );
 
   const handleQuantityChange = (id: number, quantity: number) => {
-    if (quantity === 0) {
+    console.log('CartPage: handleQuantityChange called', { id, quantity });
+    
+    // make sure quantity is a number (beginner friendly)
+    const quantityNum = Number(quantity);
+    if (isNaN(quantityNum) || quantityNum < 0) {
+      console.warn('Invalid quantity:', quantity);
+      return;
+    }
+    
+    if (quantityNum === 0) {
+      console.log('Removing item from cart:', id);
       dispatch({ type: "REMOVE_FROM_CART", payload: id });
     } else {
+      console.log('Updating quantity for item:', id, 'to', quantityNum);
       dispatch({
         type: "UPDATE_QUANTITY",
-        payload: { id, quantity },
+        payload: { id, quantity: quantityNum },
       });
+      
+      // log current state after update (beginner friendly - see what happens)
+      setTimeout(() => {
+        console.log('Quantity updated. Cart state should update automatically.');
+      }, 100);
     }
   };
 
-  const handlePaymentSuccess = (intent: any, details: CustomerDetails) => {
+  const handlePaymentSuccess = async (intent: any, details: CustomerDetails) => {
     setPaymentIntent(intent);
     setCustomerDetails(details);
     setShowCheckout(false);
     setShowOrderConfirmation(true);
+    
+    // save order to database
+    if (authState.user?.id) {
+      try {
+        const orderProducts = state.items.map(item => {
+          const itemPrice = item.salePrice || item.price || 0;
+          return {
+            productId: item._id || item.id?.toString() || '',
+            productName: item.name || '',
+            quantity: item.quantity,
+            price: itemPrice,
+            selectedColor: item.selectedColor,
+            selectedSize: item.selectedSize,
+          };
+        });
+        
+        await createOrder(authState.user.id, orderProducts, total);
+        console.log('Order saved to database!');
+      } catch (error) {
+        console.log('Error saving order:', error);
+      }
+    }
   };
 
   const handleFinishOrder = () => {
@@ -108,7 +153,7 @@ export default function CartPage() {
                       <div>
                         <h3 className="font-heading font-semibold text-neutral-900 text-lg">{item.name}</h3>
                         <p className="text-xl font-bold text-gradient-primary mt-1">
-                          ${item.price.toFixed(2)}
+                          ${(item.salePrice || item.price).toFixed(2)}
                         </p>
                         {item.designFile && (
                           <div className="mt-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-accent text-white">
@@ -147,7 +192,7 @@ export default function CartPage() {
                         </button>
                       </div>
                       <div className="text-lg font-bold text-neutral-900">
-                        Total: ${(item.price * item.quantity).toFixed(2)}
+                        Total: ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -247,7 +292,7 @@ export default function CartPage() {
                         )}
                       </div>
                       <p className="font-semibold text-neutral-900">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   ))}
