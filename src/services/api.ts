@@ -7,7 +7,7 @@ const API_URL = 'http://localhost:8080/api';
 // 1. Set up MongoDB database
 // 2. Create Node.js/Express backend with authentication endpoints
 // 3. Set MOCK_MODE to false
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 export const login = async (credentials: LoginCredentials): Promise<User> => {
   if (MOCK_MODE) {
