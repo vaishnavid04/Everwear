@@ -123,7 +123,7 @@ export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess
             </h2>
             <p className="text-white/80">
               {currentStep === 'details' && 'Please provide your shipping information'}
-              {currentStep === 'payment' && 'Secure payment powered by Stripe'}
+              {currentStep === 'payment' && 'Secure payment processing'}
             </p>
           </div>
 

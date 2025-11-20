@@ -234,7 +234,7 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={!stripe || isProcessing || loading}
+        disabled={isProcessing || loading}
         className="w-full btn-gradient disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
       >
         {isProcessing ? (
