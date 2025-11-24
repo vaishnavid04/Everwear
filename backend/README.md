@@ -60,9 +60,9 @@ You only have to do this one time on a new machine.
    - Go to **Database** → click **Connect** → **Connect your application**  
    - Copy the string that looks like this:
 
-```text
-mongodb+srv://everwear_user:YOUR_PASSWORD@cluster0.XXXX.mongodb.net/everwear?retryWrites=true&w=majority
-```
+<!-- Example connection string (not real credentials):
+mongodb+srv://username:password@cluster0.example.mongodb.net/database?retryWrites=true&w=majority
+-->
 
 Make sure at the end you have `/everwear` as database name.
 
@@ -75,17 +75,11 @@ In the `Everwear/backend` folder create a file called `.env`.
 Example `.env` file:
 
 ```text
-MONGODB_URI=mongodb+srv://everwear_user:YOUR_PASSWORD@cluster0.XXXX.mongodb.net/everwear?retryWrites=true&w=majority
+MONGODB_URI=""
 PORT=8080
 JWT_SECRET=some-secret-key-here
 FRONTEND_URL=http://localhost:5173
 ```
-
-Change these:
-- `everwear_user` → your real MongoDB user name
-- `YOUR_PASSWORD` → your real MongoDB user password
-- `cluster0.XXXX.mongodb.net` → your real cluster host from Atlas
-- `JWT_SECRET` → any random string (for example: `my-secret-123`)
 
 Do **not** put spaces in the connection string.
 
