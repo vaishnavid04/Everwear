@@ -8,13 +8,13 @@ interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   total: number;
-  items: unknown[];
+  items: any[];
   onSuccess: (paymentIntent: unknown, customerDetails: CustomerDetails) => void;
 }
 
 type CheckoutStep = 'details' | 'payment' | 'success' | 'error' | 'processing';
 
-export default function CheckoutModal({ isOpen, onClose, total, onSuccess }: CheckoutModalProps) {
+export default function CheckoutModal({ isOpen, onClose, total, items, onSuccess }: CheckoutModalProps) {
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('details');
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
     firstName: '',
@@ -248,6 +248,8 @@ export default function CheckoutModal({ isOpen, onClose, total, onSuccess }: Che
               amount={total}
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
+              cartItems={items}
+              customerDetails={customerDetails}
             />
           )}
 

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { CartItem, Product } from '../types';
+import { saveCart, getCart } from '../services/api';
+import { useAuth } from './AuthContext';
 
 interface CartState {
   items: CartItem[];
@@ -59,7 +61,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   }
 };
 
-// Helper functions for localStorage
+// Helper functions for localStorage (fallback)
 const saveCartToStorage = (items: CartItem[]) => {
   try {
     localStorage.setItem('everwear_cart', JSON.stringify(items));
@@ -78,20 +80,68 @@ const loadCartFromStorage = (): CartItem[] => {
   }
 };
 
+// Helper functions for backend
+const saveCartToBackend = async (items: CartItem[]) => {
+  try {
+    await saveCart(items);
+  } catch (error) {
+    console.error('Failed to save cart to backend:', error);
+    // Fallback to localStorage
+    saveCartToStorage(items);
+  }
+};
+
+const loadCartFromBackend = async (): Promise<CartItem[]> => {
+  try {
+    return await getCart();
+  } catch (error) {
+    console.error('Failed to load cart from backend:', error);
+    // Fallback to localStorage
+    return loadCartFromStorage();
+  }
+};
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
 
-  // Load cart from localStorage on mount
+  // Load cart on mount (try backend first, fallback to localStorage)
   useEffect(() => {
-    const savedCart = loadCartFromStorage();
-    if (savedCart.length > 0) {
-      dispatch({ type: 'LOAD_CART', payload: savedCart });
-    }
+    const loadCart = async () => {
+      try {
+        // Try to load from backend first
+        const backendCart = await loadCartFromBackend();
+        if (backendCart.length > 0) {
+          dispatch({ type: 'LOAD_CART', payload: backendCart });
+          return;
+        }
+      } catch (error) {
+        console.log('Backend not available, using localStorage');
+      }
+
+      // Fallback to localStorage
+      const savedCart = loadCartFromStorage();
+      if (savedCart.length > 0) {
+        dispatch({ type: 'LOAD_CART', payload: savedCart });
+      }
+    };
+
+    loadCart();
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart whenever it changes (try backend first, fallback to localStorage)
   useEffect(() => {
-    saveCartToStorage(state.items);
+    const saveCart = async () => {
+      try {
+        await saveCartToBackend(state.items);
+      } catch (error) {
+        // Fallback to localStorage if backend fails
+        saveCartToStorage(state.items);
+      }
+    };
+
+    if (state.items.length > 0) {
+      saveCart();
+    }
   }, [state.items]);
 
   return (

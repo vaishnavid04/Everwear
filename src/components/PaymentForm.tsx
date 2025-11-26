@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { CreditCard, Lock, AlertCircle } from 'lucide-react';
+import { createOrder } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 interface PaymentFormProps {
   amount: number;
   onSuccess: (paymentIntent: unknown) => void;
   onError: (error: string) => void;
   loading?: boolean;
+  cartItems?: any[];
+  customerDetails?: any;
 }
 
 
 
-export default function PaymentForm({ amount, onSuccess, onError, loading = false }: PaymentFormProps) {
+export default function PaymentForm({ amount, onSuccess, onError, loading = false, cartItems = [], customerDetails = {} }: PaymentFormProps) {
+  const { state: authState } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -117,19 +122,39 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
     }
 
     try {
+      // Check if user is authenticated
+      if (!authState.user?.id) {
+        throw new Error('User not authenticated');
+      }
+
       // Simulate payment processing delay
       await new Promise(resolve => setTimeout(resolve, 2000));
 
+      // Create order in backend
+      const orderData = {
+        userId: authState.user.id,
+        items: cartItems,
+        total: amount,
+        customerDetails: customerDetails,
+        paymentMethod: 'card',
+        status: 'completed'
+      };
+
+      console.log('Creating order with data:', orderData);
+      const order = await createOrder(orderData);
+
       // All validations passed - successful payment
       onSuccess({
-        id: 'ord_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        id: order.id || 'ord_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
         status: 'succeeded',
         amount: amount * 100,
         currency: 'usd',
-        message: 'Payment processed successfully! Check your email for order confirmation and shipping updates.'
+        message: 'Payment processed successfully! Check your email for order confirmation and shipping updates.',
+        order: order
       });
 
-    } catch {
+    } catch (error) {
+      console.error('Order creation failed:', error);
       onError('Payment processing failed. Please try again.');
     } finally {
       setIsProcessing(false);

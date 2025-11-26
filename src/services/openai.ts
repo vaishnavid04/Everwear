@@ -1,4 +1,5 @@
 import { products } from '../data/products';
+import { saveChatMessage } from './api';
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
@@ -86,45 +87,56 @@ const getFallbackResponse = (message: string): string => {
 };
 
 export const sendChatMessage = async (message: string): Promise<string> => {
+  let botResponse: string;
+
   // If no API key, use fallback responses
   if (!OPENAI_API_KEY) {
     console.warn('OpenAI API key not configured, using fallback responses');
-    return getFallbackResponse(message);
-  }
+    botResponse = getFallbackResponse(message);
+  } else {
+    try {
+      const response = await fetch(OPENAI_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: createWebsiteContext()
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.7,
+        }),
+      });
 
-  try {
-    const response = await fetch(OPENAI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: createWebsiteContext()
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        max_tokens: 300,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error(`OpenAI API error: ${response.status}`);
-      return getFallbackResponse(message);
+      if (!response.ok) {
+        console.error(`OpenAI API error: ${response.status}`);
+        botResponse = getFallbackResponse(message);
+      } else {
+        const data = await response.json();
+        botResponse = data.choices[0]?.message?.content || getFallbackResponse(message);
+      }
+    } catch (error) {
+      console.error('Error calling OpenAI API:', error);
+      botResponse = getFallbackResponse(message);
     }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || getFallbackResponse(message);
-  } catch (error) {
-    console.error('Error calling OpenAI API:', error);
-    return getFallbackResponse(message);
   }
+
+  // Save the conversation to backend
+  try {
+    await saveChatMessage(message, botResponse);
+  } catch (error) {
+    console.warn('Failed to save chat message to backend:', error);
+  }
+
+  return botResponse;
 };
