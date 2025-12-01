@@ -1,105 +1,142 @@
 import React, { useState } from 'react';
-import {
-  useStripe,
-  useElements,
-  CardNumberElement,
-  CardExpiryElement,
-  CardCvcElement,
-} from '@stripe/react-stripe-js';
-import { CreditCard, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { CreditCard, Lock, AlertCircle } from 'lucide-react';
 
 interface PaymentFormProps {
   amount: number;
-  onSuccess: (paymentIntent: any) => void;
+  onSuccess: (paymentIntent: unknown) => void;
   onError: (error: string) => void;
   loading?: boolean;
 }
 
-const cardElementOptions = {
-  style: {
-    base: {
-      fontSize: '16px',
-      color: '#424770',
-      '::placeholder': {
-        color: '#aab7c4',
-      },
-      fontFamily: 'Inter, sans-serif',
-    },
-    invalid: {
-      color: '#9e2146',
-    },
-  },
-};
+
 
 export default function PaymentForm({ amount, onSuccess, onError, loading = false }: PaymentFormProps) {
-  const stripe = useStripe();
-  const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvc, setCvc] = useState('');
   const [cardErrors, setCardErrors] = useState<{[key: string]: string}>({});
+
+  // Format card number with spaces
+  const formatCardNumber = (value: string) => {
+    const cleaned = value.replace(/\s/g, '');
+    const match = cleaned.match(/\d{1,4}/g);
+    return match ? match.join(' ').substr(0, 19) : '';
+  };
+
+  // Format expiry date as MM/YY
+  const formatExpiryDate = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length >= 2) {
+      return cleaned.substr(0, 2) + '/' + cleaned.substr(2, 2);
+    }
+    return cleaned;
+  };
+
+  // Handle card number input
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCardNumber(e.target.value);
+    setCardNumber(formatted);
+    // Clear error when user starts typing
+    if (cardErrors.cardNumber) {
+      setCardErrors(prev => ({ ...prev, cardNumber: '' }));
+    }
+  };
+
+  // Handle expiry date input
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatExpiryDate(e.target.value);
+    setExpiryDate(formatted);
+    // Clear error when user starts typing
+    if (cardErrors.cardExpiry) {
+      setCardErrors(prev => ({ ...prev, cardExpiry: '' }));
+    }
+  };
+
+  // Handle CVC input
+  const handleCvcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').substr(0, 3);
+    setCvc(value);
+    // Clear error when user starts typing
+    if (cardErrors.cardCvc) {
+      setCardErrors(prev => ({ ...prev, cardCvc: '' }));
+    }
+  };
+
+  // Validation functions
+  const validateCardNumber = (cardNumber: string): boolean => {
+    const cleaned = cardNumber.replace(/\s/g, '');
+    return /^\d{16}$/.test(cleaned);
+  };
+
+  const validateExpiryDate = (expiry: string): boolean => {
+    const match = expiry.match(/^(\d{2})\/(\d{2})$/);
+    if (!match) return false;
+
+    const month = parseInt(match[1]);
+    const year = parseInt(match[2]) + 2000;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    if (month < 1 || month > 12) return false;
+    if (year < currentYear || (year === currentYear && month < currentMonth)) return false;
+
+    return true;
+  };
+
+  const validateCVC = (cvc: string): boolean => {
+    return /^\d{3}$/.test(cvc);
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
     setIsProcessing(true);
     setCardErrors({});
 
-    const cardNumberElement = elements.getElement(CardNumberElement);
+    // Validate all fields
+    const errors: {[key: string]: string} = {};
 
-    if (!cardNumberElement) {
-      onError('Card element not found');
+    if (!validateCardNumber(cardNumber)) {
+      errors.cardNumber = 'Please enter a valid 16-digit card number';
+    }
+
+    if (!validateExpiryDate(expiryDate)) {
+      errors.cardExpiry = 'Please enter a valid expiry date (MM/YY) that is not expired';
+    }
+
+    if (!validateCVC(cvc)) {
+      errors.cardCvc = 'Please enter a valid 3-digit security code';
+    }
+
+    // If there are validation errors, show them
+    if (Object.keys(errors).length > 0) {
+      setCardErrors(errors);
       setIsProcessing(false);
       return;
     }
 
     try {
-      // Create payment method
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardNumberElement,
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // All validations passed - successful payment
+      onSuccess({
+        id: 'ord_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        status: 'succeeded',
+        amount: amount * 100,
+        currency: 'usd',
+        message: 'Payment processed successfully! Check your email for order confirmation and shipping updates.'
       });
 
-      if (error) {
-        onError(error.message || 'Payment failed');
-        setIsProcessing(false);
-        return;
-      }
-
-      // For demo purposes, we'll simulate a successful payment
-      // In a real app, you would send the payment method to your backend
-      setTimeout(() => {
-        onSuccess({
-          id: 'pi_demo_' + Math.random().toString(36).substr(2, 9),
-          status: 'succeeded',
-          amount: amount * 100,
-          currency: 'usd',
-        });
-        setIsProcessing(false);
-      }, 2000);
-
-    } catch (err) {
-      onError('An unexpected error occurred');
+    } catch {
+      onError('Payment processing failed. Please try again.');
+    } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleCardChange = (elementType: string) => (event: any) => {
-    if (event.error) {
-      setCardErrors(prev => ({
-        ...prev,
-        [elementType]: event.error.message
-      }));
-    } else {
-      setCardErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[elementType];
-        return newErrors;
-      });
-    }
-  };
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -122,12 +159,16 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
           Card Number
         </label>
         <div className="relative">
-          <div className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-200">
-            <CardNumberElement
-              options={cardElementOptions}
-              onChange={handleCardChange('cardNumber')}
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="1234 5678 9012 3456"
+            value={cardNumber}
+            onChange={handleCardNumberChange}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
+              cardErrors.cardNumber ? 'border-red-500 bg-red-50' : 'border-neutral-300'
+            }`}
+            maxLength={19}
+          />
           {cardErrors.cardNumber && (
             <div className="flex items-center space-x-1 mt-1 text-red-600 text-sm">
               <AlertCircle className="w-4 h-4" />
@@ -143,12 +184,16 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
           <label className="block text-sm font-medium text-neutral-700">
             Expiry Date
           </label>
-          <div className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-200">
-            <CardExpiryElement
-              options={cardElementOptions}
-              onChange={handleCardChange('cardExpiry')}
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="MM/YY"
+            value={expiryDate}
+            onChange={handleExpiryChange}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
+              cardErrors.cardExpiry ? 'border-red-500 bg-red-50' : 'border-neutral-300'
+            }`}
+            maxLength={5}
+          />
           {cardErrors.cardExpiry && (
             <div className="flex items-center space-x-1 mt-1 text-red-600 text-sm">
               <AlertCircle className="w-4 h-4" />
@@ -161,12 +206,16 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
           <label className="block text-sm font-medium text-neutral-700">
             CVC
           </label>
-          <div className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-200">
-            <CardCvcElement
-              options={cardElementOptions}
-              onChange={handleCardChange('cardCvc')}
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="123"
+            value={cvc}
+            onChange={handleCvcChange}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 ${
+              cardErrors.cardCvc ? 'border-red-500 bg-red-50' : 'border-neutral-300'
+            }`}
+            maxLength={3}
+          />
           {cardErrors.cardCvc && (
             <div className="flex items-center space-x-1 mt-1 text-red-600 text-sm">
               <AlertCircle className="w-4 h-4" />
@@ -176,16 +225,10 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
         </div>
       </div>
 
-      {/* Security Notice */}
-      <div className="flex items-center space-x-2 text-sm text-neutral-600 bg-neutral-50 p-3 rounded-lg">
-        <Lock className="w-4 h-4" />
-        <span>Your payment information is secure and encrypted</span>
-      </div>
-
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={!stripe || isProcessing || loading}
+        disabled={isProcessing || loading}
         className="w-full btn-gradient disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
       >
         {isProcessing ? (

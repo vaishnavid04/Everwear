@@ -21,7 +21,15 @@ export default function LoginForm() {
       dispatch({ type: 'AUTH_START' });
       const user = await api.login({ email, password });
       dispatch({ type: 'AUTH_SUCCESS', payload: user });
-      navigate('/');
+
+      // Check for return URL and navigate there, otherwise go to home
+      const returnUrl = localStorage.getItem('everwear_return_url');
+      if (returnUrl) {
+        localStorage.removeItem('everwear_return_url');
+        navigate(returnUrl);
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
       dispatch({

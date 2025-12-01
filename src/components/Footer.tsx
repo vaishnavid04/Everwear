@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom';
 const Footer: React.FC = () => {
   const handleContactClick = (type: 'email' | 'phone') => {
     // Analytics event
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'footer_contact_click', {
+    if (typeof window !== 'undefined' && (window as unknown as { gtag?: unknown }).gtag) {
+      const gtag = (window as unknown as { gtag: (event: string, action: string, params: Record<string, unknown>) => void }).gtag;
+      gtag('event', 'footer_contact_click', {
         contact_type: type
       });
     }

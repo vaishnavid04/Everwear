@@ -83,6 +83,25 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   }
 };
 
+// Helper functions for localStorage
+const saveCartToStorage = (items: CartItem[]) => {
+  try {
+    localStorage.setItem('everwear_cart', JSON.stringify(items));
+  } catch (error) {
+    console.error('Failed to save cart to localStorage:', error);
+  }
+};
+
+const loadCartFromStorage = (): CartItem[] => {
+  try {
+    const saved = localStorage.getItem('everwear_cart');
+    return saved ? JSON.parse(saved) : [];
+  } catch (error) {
+    console.error('Failed to load cart from localStorage:', error);
+    return [];
+  }
+};
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, { items: [], loading: false });
   const { state: authState } = useAuth();
@@ -278,6 +297,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Cart state unchanged or already syncing, skipping sync');
     }
   }, [state.items, authState.user?.id, authState.isAuthenticated]); // changed from state.items.length to state.items
+
 
   return (
     <CartContext.Provider value={{ state, dispatch, syncCartToBackend }}>

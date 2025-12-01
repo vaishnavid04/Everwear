@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { Product } from '../types';
 import { Plus, Minus, Check, AlertCircle } from 'lucide-react';
 import { getProductById } from '../data/products';
-
-// Using centralized product data
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();

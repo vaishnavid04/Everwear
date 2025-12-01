@@ -16,36 +16,34 @@ export const login = async (credentials: LoginCredentials): Promise<User> => {
 
     // Simple validation for demo
     if (credentials.email && credentials.password) {
+      const emailName = credentials.email.split('@')[0];
+      const nameParts = emailName.split('.');
       return {
         id: '1',
         email: credentials.email,
-        name: credentials.email.split('@')[0],
-        createdAt: new Date().toISOString(),
+        firstName: nameParts[0] || 'User',
+        lastName: nameParts[1] || 'Account',
       };
     } else {
       throw new Error('Please enter valid email and password');
     }
   }
 
-  try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-      credentials: 'include',
-    });
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(credentials),
+    credentials: 'include',
+  });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Login failed');
-    }
-
-    return response.json();
-  } catch (error) {
-    throw error;
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Login failed');
   }
+
+  return response.json();
 };
 
 export const register = async (credentials: RegisterCredentials): Promise<User> => {
@@ -54,37 +52,33 @@ export const register = async (credentials: RegisterCredentials): Promise<User> 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Simple validation for demo
-    if (credentials.email && credentials.password && credentials.name) {
+    if (credentials.email && credentials.password && credentials.firstName && credentials.lastName) {
       return {
         id: '1',
         email: credentials.email,
-        name: credentials.name,
-        createdAt: new Date().toISOString(),
+        firstName: credentials.firstName,
+        lastName: credentials.lastName,
       };
     } else {
       throw new Error('Please fill in all required fields');
     }
   }
 
-  try {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-      credentials: 'include',
-    });
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(credentials),
+    credentials: 'include',
+  });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Registration failed');
-    }
-
-    return response.json();
-  } catch (error) {
-    throw error;
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Registration failed');
   }
+
+  return response.json();
 };
 
 export const logout = async (): Promise<void> => {
@@ -94,16 +88,12 @@ export const logout = async (): Promise<void> => {
     return;
   }
 
-  try {
-    const response = await fetch(`${API_URL}/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+  const response = await fetch(`${API_URL}/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+  });
 
-    if (!response.ok) {
-      throw new Error('Logout failed');
-    }
-  } catch (error) {
-    throw error;
+  if (!response.ok) {
+    throw new Error('Logout failed');
   }
 };
