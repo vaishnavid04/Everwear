@@ -131,16 +131,24 @@ export default function PaymentForm({ amount, onSuccess, onError, loading = fals
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Create order in backend
+      const orderProducts = cartItems.map(item => ({
+        productId: item._id || item.id?.toString() || '',
+        productName: item.name || 'Unknown Product',
+        quantity: item.quantity || 1,
+        price: item.salePrice || item.price || 0,
+        selectedColor: item.selectedColor || '',
+        selectedSize: item.selectedSize || '',
+      }));
+
       const orderData = {
         userId: authState.user.id,
-        items: cartItems,
+        products: orderProducts,  // Changed from 'items' to 'products'
         total: amount,
-        customerDetails: customerDetails,
-        paymentMethod: 'card',
-        status: 'completed'
       };
 
-      console.log('Creating order with data:', orderData);
+      console.log('💳 PaymentForm - Cart items:', cartItems);
+      console.log('💳 PaymentForm - Order products formatted:', orderProducts);
+      console.log('💳 PaymentForm - Creating order with data:', orderData);
       const order = await createOrder(orderData);
 
       // All validations passed - successful payment

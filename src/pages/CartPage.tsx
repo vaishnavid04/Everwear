@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { CustomerDetails } from "../types";
@@ -7,6 +8,7 @@ import CheckoutModal from "../components/CheckoutModal";
 import { createOrder } from "../services/orderApi";
 
 export default function CartPage() {
+  const navigate = useNavigate();
   const { state, dispatch } = useCart();
   const { state: authState } = useAuth();
   const [showCheckout, setShowCheckout] = useState(false);
@@ -71,14 +73,19 @@ export default function CartPage() {
           const itemPrice = item.salePrice || item.price || 0;
           return {
             productId: item._id || item.id?.toString() || '',
-            productName: item.name || '',
-            quantity: item.quantity,
+            productName: item.name || 'Unknown Product',
+            quantity: item.quantity || 1,
             price: itemPrice,
-            selectedColor: item.selectedColor,
-            selectedSize: item.selectedSize,
+            selectedColor: item.selectedColor || '',
+            selectedSize: item.selectedSize || '',
           };
         });
-        
+
+        console.log('🛒 Cart items being sent to order:', state.items);
+        console.log('📦 Order products formatted:', orderProducts);
+        console.log('💰 Total:', total);
+        console.log('👤 User ID:', authState.user.id);
+
         await createOrder(authState.user.id, orderProducts, total);
         console.log('Order saved to database!');
       } catch (error) {
@@ -91,6 +98,8 @@ export default function CartPage() {
     setShowOrderConfirmation(false);
     dispatch({ type: "CLEAR_CART" });
     setPaymentIntent(null);
+    // Navigate back to home page
+    navigate('/');
   };
 
   if (state.items.length === 0 && !showOrderConfirmation) {
@@ -260,21 +269,29 @@ export default function CartPage() {
       {/* Enhanced Order Confirmation Modal */}
       {showOrderConfirmation && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full animate-scaleIn">
-            <div className="bg-gradient-primary text-white p-8 rounded-t-2xl text-center">
-              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-glow">
-                <Check className="w-10 h-10 text-white" />
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden animate-scaleIn flex flex-col">
+            <div className="bg-gradient-primary text-white p-6 rounded-t-2xl text-center relative flex-shrink-0">
+              {/* Close button */}
+              <button
+                onClick={handleFinishOrder}
+                className="absolute top-3 right-3 p-2 hover:bg-white/20 rounded-full transition-colors duration-200 z-10 bg-white/10"
+                title="Close and continue shopping"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 animate-glow">
+                <Check className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-3xl font-heading font-bold mb-2">
+              <h2 className="text-2xl font-heading font-bold mb-2">
                 Order Confirmed!
               </h2>
-              <p className="text-white/90">Thank you for your purchase</p>
-              <div className="mt-4 inline-block bg-white/20 px-4 py-2 rounded-lg">
-                <p className="text-sm font-mono">Order #{paymentIntent?.id || orderId}</p>
+              <p className="text-white/90 text-sm">Thank you for your purchase</p>
+              <div className="mt-3 inline-block bg-white/20 px-3 py-1 rounded-lg">
+                <p className="text-xs font-mono">Order #{paymentIntent?.id || orderId}</p>
               </div>
             </div>
 
-            <div className="p-8">
+            <div className="p-6 overflow-y-auto flex-1">
               {/* Order Items */}
               <div className="mb-6">
                 <h3 className="font-heading font-semibold text-neutral-900 mb-4">Order Summary</h3>

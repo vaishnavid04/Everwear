@@ -8,12 +8,14 @@ export const createOrder = async (userId: string, products: any[], total: number
     // format products for order
     const orderProducts = products.map(item => ({
       productId: item.productId || item.id,
-      productName: item.name,
+      productName: item.productName || item.name,
       quantity: item.quantity,
       price: item.price,
       selectedColor: item.selectedColor,
       selectedSize: item.selectedSize,
     }));
+
+    console.log('🔧 OrderAPI - Formatted products:', JSON.stringify(orderProducts, null, 2));
 
     const response = await fetch(`${API_URL}/orders`, {
       method: 'POST',

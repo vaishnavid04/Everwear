@@ -12,7 +12,12 @@ router.post('/', async (req, res) => {
     const userId = req.body.userId;
     const products = req.body.products;
     const total = req.body.total;
-    
+
+    console.log('🔥 Backend received order request:');
+    console.log('👤 User ID:', userId);
+    console.log('📦 Products:', JSON.stringify(products, null, 2));
+    console.log('💰 Total:', total);
+
     // create order
     const newOrder = new Order({
       userId: userId,
@@ -22,7 +27,8 @@ router.post('/', async (req, res) => {
     });
     
     await newOrder.save();
-    
+    console.log('✅ Order saved to database:', newOrder);
+
     // add order to user's order history
     const user = await User.findById(userId);
     if (user) {
