@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, User, Bot } from 'lucide-react';
 import { sendChatMessage } from '../services/openai';
+import { saveChatbotInquiry } from '../services/chatbotApi';
+import { useAuth } from '../context/AuthContext';
 
 interface Message {
   id: string;
@@ -10,6 +12,7 @@ interface Message {
 }
 
 export default function Chatbot() {
+  const { state: authState } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -59,7 +62,11 @@ export default function Chatbot() {
       };
 
       setMessages(prev => [...prev, botResponse]);
-    } catch {
+      
+      // save inquiry to database
+      const userId = authState.user?.id || null;
+      await saveChatbotInquiry(userId, messageToSend, aiResponse);
+    } catch (error) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment, or feel free to browse our products!",
@@ -72,7 +79,7 @@ export default function Chatbot() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -149,7 +156,7 @@ export default function Chatbot() {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={handleKeyDown}
+                onKeyPress={handleKeyPress}
                 placeholder="Ask about products, pricing, sizing..."
                 className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:border-primary-800 text-sm"
               />

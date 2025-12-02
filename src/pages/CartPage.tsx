@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { CustomerDetails } from "../types";
-import { X, ShoppingBag, CreditCard, Truck, Check, Sparkles, Star, LogIn } from "lucide-react";
+import { X, ShoppingBag, CreditCard, Truck, Check, Sparkles, Star } from "lucide-react";
 import CheckoutModal from "../components/CheckoutModal";
+import { createOrder } from "../services/orderApi";
 
 export default function CartPage() {
-  const navigate = useNavigate();
   const { state, dispatch } = useCart();
   const { state: authState } = useAuth();
   const [showCheckout, setShowCheckout] = useState(false);
@@ -20,46 +19,78 @@ export default function CartPage() {
     city: "",
     zipCode: "",
   });
-  const [paymentIntent, setPaymentIntent] = useState<unknown>(null);
+  const [paymentIntent, setPaymentIntent] = useState<any>(null);
   const [orderId] = useState(() => Math.floor(Math.random() * 1000000));
 
+  // calculate total using salePrice if available, otherwise use price
   const total = state.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => {
+      const itemPrice = item.salePrice || item.price;
+      return sum + itemPrice * item.quantity;
+    },
     0
   );
 
   const handleQuantityChange = (id: number, quantity: number) => {
-    if (quantity === 0) {
+    console.log('CartPage: handleQuantityChange called', { id, quantity });
+    
+    // make sure quantity is a number (beginner friendly)
+    const quantityNum = Number(quantity);
+    if (isNaN(quantityNum) || quantityNum < 0) {
+      console.warn('Invalid quantity:', quantity);
+      return;
+    }
+    
+    if (quantityNum === 0) {
+      console.log('Removing item from cart:', id);
       dispatch({ type: "REMOVE_FROM_CART", payload: id });
     } else {
+      console.log('Updating quantity for item:', id, 'to', quantityNum);
       dispatch({
         type: "UPDATE_QUANTITY",
-        payload: { id, quantity },
+        payload: { id, quantity: quantityNum },
       });
+      
+      // log current state after update (beginner friendly - see what happens)
+      setTimeout(() => {
+        console.log('Quantity updated. Cart state should update automatically.');
+      }, 100);
     }
   };
 
-  const handlePaymentSuccess = (intent: unknown, details: CustomerDetails) => {
+  const handlePaymentSuccess = async (intent: any, details: CustomerDetails) => {
     setPaymentIntent(intent);
     setCustomerDetails(details);
     setShowCheckout(false);
     setShowOrderConfirmation(true);
+    
+    // save order to database
+    if (authState.user?.id) {
+      try {
+        const orderProducts = state.items.map(item => {
+          const itemPrice = item.salePrice || item.price || 0;
+          return {
+            productId: item._id || item.id?.toString() || '',
+            productName: item.name || '',
+            quantity: item.quantity,
+            price: itemPrice,
+            selectedColor: item.selectedColor,
+            selectedSize: item.selectedSize,
+          };
+        });
+        
+        await createOrder(authState.user.id, orderProducts, total);
+        console.log('Order saved to database!');
+      } catch (error) {
+        console.log('Error saving order:', error);
+      }
+    }
   };
 
   const handleFinishOrder = () => {
     setShowOrderConfirmation(false);
     dispatch({ type: "CLEAR_CART" });
     setPaymentIntent(null);
-  };
-
-  const handleCheckoutClick = () => {
-    if (!authState.isAuthenticated) {
-      // Save current URL to return after login
-      localStorage.setItem('everwear_return_url', '/cart');
-      navigate('/login');
-    } else {
-      setShowCheckout(true);
-    }
   };
 
   if (state.items.length === 0 && !showOrderConfirmation) {
@@ -122,7 +153,7 @@ export default function CartPage() {
                       <div>
                         <h3 className="font-heading font-semibold text-neutral-900 text-lg">{item.name}</h3>
                         <p className="text-xl font-bold text-gradient-primary mt-1">
-                          ${item.price.toFixed(2)}
+                          ${(item.salePrice || item.price).toFixed(2)}
                         </p>
                         {item.designFile && (
                           <div className="mt-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-accent text-white">
@@ -161,7 +192,7 @@ export default function CartPage() {
                         </button>
                       </div>
                       <div className="text-lg font-bold text-neutral-900">
-                        Total: ${(item.price * item.quantity).toFixed(2)}
+                        Total: ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -200,30 +231,12 @@ export default function CartPage() {
             </div>
 
             <button
-              onClick={handleCheckoutClick}
+              onClick={() => setShowCheckout(true)}
               className="w-full btn-gradient flex items-center justify-center space-x-3 text-lg"
             >
-              {authState.isAuthenticated ? (
-                <>
-                  <CreditCard size={24} />
-                  <span>Secure Checkout</span>
-                </>
-              ) : (
-                <>
-                  <LogIn size={24} />
-                  <span>Login to Checkout</span>
-                </>
-              )}
+              <CreditCard size={24} />
+              <span>Secure Checkout</span>
             </button>
-
-            {!authState.isAuthenticated && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center justify-center space-x-2 text-sm text-blue-700">
-                  <LogIn className="w-4 h-4" />
-                  <span>Create an account or login to save your cart and checkout securely</span>
-                </div>
-              </div>
-            )}
 
             <div className="mt-4 text-center">
               <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500">
@@ -247,15 +260,8 @@ export default function CartPage() {
       {/* Enhanced Order Confirmation Modal */}
       {showOrderConfirmation && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scaleIn">
-            <div className="bg-gradient-primary text-white p-6 rounded-t-2xl text-center relative">
-              {/* Close Button */}
-              <button
-                onClick={handleFinishOrder}
-                className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full animate-scaleIn">
+            <div className="bg-gradient-primary text-white p-8 rounded-t-2xl text-center">
               <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-glow">
                 <Check className="w-10 h-10 text-white" />
               </div>
@@ -268,7 +274,7 @@ export default function CartPage() {
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-8">
               {/* Order Items */}
               <div className="mb-6">
                 <h3 className="font-heading font-semibold text-neutral-900 mb-4">Order Summary</h3>
@@ -286,7 +292,7 @@ export default function CartPage() {
                         )}
                       </div>
                       <p className="font-semibold text-neutral-900">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   ))}
